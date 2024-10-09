@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -131,46 +132,46 @@ func initDb() {
 	}
 }
 
-// func handleNextDate(w http.ResponseWriter, req *http.Request) {
-// 	repeat := req.FormValue("repeat")
-// 	reqDate := req.FormValue("date")
-// 	now, err := time.Parse("20060102", req.FormValue("now"))
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
+func handleNextDate(w http.ResponseWriter, req *http.Request) {
+	repeat := req.FormValue("repeat")
+	reqDate := req.FormValue("date")
+	now, err := time.Parse("20060102", req.FormValue("now"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-// 	date, err := NextDate(now, reqDate, repeat)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
+	date, err := NextDate(now, reqDate, repeat)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-// 	w.Header().Set("Content-Type", "application/json")
-// 	// так как все успешно, то статус OK
-// 	w.WriteHeader(http.StatusOK)
-// 	// записываем сериализованные в JSON данные в тело ответа
-// 	_, err = w.Write([]byte(date))
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// }
+	w.Header().Set("Content-Type", "application/json")
+	// так как все успешно, то статус OK
+	w.WriteHeader(http.StatusOK)
+	// записываем сериализованные в JSON данные в тело ответа
+	_, err = w.Write([]byte(date))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
 
-// func main() {
+func main() {
 
-// 	initDb()
-// 	webDir := "./web"
+	initDb()
+	webDir := "./web"
 
-// 	fmt.Println("Запускаем сервер")
-// 	http.Handle("/", http.FileServer(http.Dir(webDir)))
-// 	http.HandleFunc("/api/nextdate", handleNextDate)
-// 	err := http.ListenAndServe(":7540", nil)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	fmt.Println("Завершаем работу")
-// }
+	fmt.Println("Запускаем сервер")
+	http.Handle("/", http.FileServer(http.Dir(webDir)))
+	http.HandleFunc("/api/nextdate", handleNextDate)
+	err := http.ListenAndServe(":7540", nil)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Завершаем работу")
+}
 
 // func NextDate(now time.Time, date string, repeat string) (string, error) {
 // 	// Validate the input date format (YYYYMMDD)
