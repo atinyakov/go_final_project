@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	// _ "github.com/mattn/go-sqlite3"
 	_ "modernc.org/sqlite" // Modernc SQLite driver without CGO
 
 	"github.com/stretchr/testify/assert"
