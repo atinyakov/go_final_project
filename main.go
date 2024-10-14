@@ -10,20 +10,20 @@ import (
 	"time"
 
 	"github.com/atinyakov/go_final_project/controllers"
+	"github.com/atinyakov/go_final_project/nextdate"
 	"github.com/atinyakov/go_final_project/services"
 	_ "modernc.org/sqlite" // Modernc SQLite driver without CGO
 )
 
 func createDb(db *sql.DB) error {
 	query := `
-	CREATE TABLE scheduler (
+	CREATE TABLE IF NOT EXISTS scheduler (
 		id INTEGER PRIMARY KEY,
 		date VARCHAR(8) NOT NULL,
 		title TEXT NOT NULL,
 		comment TEXT,
 		repeat VARCHAR(128)
 	);
-	CREATE INDEX task_date ON scheduler (date);
 	`
 	_, err := db.Exec(query)
 	if err != nil {
@@ -80,7 +80,7 @@ func handleNextDate(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	date, err := services.NextDate(now, reqDate, repeat)
+	date, err := nextdate.Get(now, reqDate, repeat)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
