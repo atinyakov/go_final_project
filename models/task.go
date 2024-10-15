@@ -30,7 +30,6 @@ type GetAllTaksksResponceSuccess struct {
 	Tasks []*Task `json:"tasks"`
 }
 
-// hasDuplicates проверяет наличие дубликатов в списке строк
 func hasDuplicates(arr []string) bool {
 	seen := make(map[string]bool)
 	for _, v := range arr {
@@ -42,10 +41,7 @@ func hasDuplicates(arr []string) bool {
 	return false
 }
 
-// validateRepeat проверяет значение repeat по описанным паттернам
 func validateRepeat(repeat string) error {
-	// Определение регулярных выражений для каждого паттерна
-
 	// d <число> — от 1 до 400
 	dPattern := regexp.MustCompile(`^d\s([1-9][0-9]{0,2}|[1-3][0-9]{2}|400)$`)
 
@@ -56,7 +52,7 @@ func validateRepeat(repeat string) error {
 	wPattern := regexp.MustCompile(`^w\s([1-7](,[1-7])*)$`)
 
 	// m <1-31,-1,-2> [через запятую от 1 до 12]
-	// mPattern := regexp.MustCompile(`^m\s([1-9]|[12][0-9]|3[01]|-1|-2)(,([1-9]|[12][0-9]|3[01]|-1|-2))*\s?([1-9]|1[0-2])(,([1-9]|1[0-2]))*$`)
+	mPattern := regexp.MustCompile(`^m\s([1-9]|[12][0-9]|3[01]|-1|-2)(,([1-9]|[12][0-9]|3[01]|-1|-2))*\s?([1-9]|1[0-2])(,([1-9]|1[0-2]))*$`)
 
 	// Проверка соответствия каждому паттерну
 	switch {
@@ -68,14 +64,15 @@ func validateRepeat(repeat string) error {
 		// Проверка на дубликаты дней недели (например, "w 1,1" недопустимо)
 		days := strings.Split(repeat[2:], ",")
 		if hasDuplicates(days) {
-			return fmt.Errorf("некорректные дни недели: дубликаты значений")
+			return fmt.Errorf("Has dublicates")
 		}
 		return nil
-	// case mPattern.MatchString(repeat):
-	// 	return nil
+	case mPattern.MatchString(repeat):
+		fmt.Println("Not supported", repeat)
+		return errors.New("Incorrect format repeat")
 	default:
-		fmt.Println("Не подеерживаемый формат", repeat)
-		return errors.New("некорректный формат repeat")
+		fmt.Println("Not supported", repeat)
+		return errors.New("Incorrect format repeat")
 	}
 }
 
@@ -100,7 +97,7 @@ func ValidateTask(t *Task) error {
 		} else {
 			err := validateRepeat(t.Repeat)
 			if err != nil {
-				fmt.Println("Rule not supported", t.Repeat, err.Error())
+				fmt.Println("Rule is not supported", t.Repeat, err.Error())
 				return err
 			}
 

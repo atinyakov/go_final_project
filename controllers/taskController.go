@@ -26,13 +26,13 @@ func (t *TaskController) HandleTask(w http.ResponseWriter, req *http.Request) {
 	if method == http.MethodPost {
 		var task models.Task
 		var buf bytes.Buffer
-		// читаем тело запроса
+
 		_, err := buf.ReadFrom(req.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		// десериализуем JSON в task
+
 		if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
 			http.Error(w, "Error: Cannot deserialize JSON", http.StatusBadRequest)
 			return
@@ -45,11 +45,11 @@ func (t *TaskController) HandleTask(w http.ResponseWriter, req *http.Request) {
 
 			errorJSON, jsonErr := json.Marshal(errorResponce)
 			if jsonErr != nil {
-				http.Error(w, "Failed to create task", http.StatusInternalServerError)
+				http.Error(w, "Failed to encode task", http.StatusInternalServerError)
 				return
 			}
 
-			http.Error(w, string(errorJSON), http.StatusBadRequest)
+			http.Error(w, string(errorJSON), http.StatusInternalServerError)
 			return
 		}
 
@@ -61,7 +61,7 @@ func (t *TaskController) HandleTask(w http.ResponseWriter, req *http.Request) {
 
 		resp, err := json.Marshal(response)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -103,13 +103,13 @@ func (t *TaskController) HandleTask(w http.ResponseWriter, req *http.Request) {
 	if method == http.MethodPut {
 		var task models.Task
 		var buf bytes.Buffer
-		// читаем тело запроса
+
 		_, err := buf.ReadFrom(req.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		// десериализуем JSON в task
+
 		if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
 			http.Error(w, "Error: Cannot deserialize JSON", http.StatusInternalServerError)
 			return
@@ -153,7 +153,7 @@ func (t *TaskController) HandleTask(w http.ResponseWriter, req *http.Request) {
 				return
 			}
 
-			http.Error(w, string(errorJSON), http.StatusBadRequest)
+			http.Error(w, string(errorJSON), http.StatusInternalServerError)
 			return
 		}
 

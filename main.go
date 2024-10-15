@@ -41,7 +41,13 @@ func initDb() (*sql.DB, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	dbFile := filepath.Join(filepath.Dir(appPath), "scheduler.db")
+
+	dbFileEnv := os.Getenv("TODO_DBFILE")
+	if dbFileEnv == "" {
+		dbFileEnv = "scheduler.db"
+	}
+
+	dbFile := filepath.Join(filepath.Dir(appPath), dbFileEnv)
 	_, err = os.Stat(dbFile)
 
 	var install bool
@@ -50,12 +56,9 @@ func initDb() (*sql.DB, error) {
 
 		install = true
 	}
-	// если install равен true, после открытия БД требуется выполнить
-	// sql-запрос с CREATE TABLE и CREATE INDEX
-
 	fmt.Println("Запускаем БД")
 
-	db, err := sql.Open("sqlite", "scheduler.db")
+	db, err := sql.Open("sqlite", dbFileEnv)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -64,7 +67,7 @@ func initDb() (*sql.DB, error) {
 	if install {
 		err := createDb(db)
 		if err != nil {
-			fmt.Println(err) // TODO обработать ошибку красиво
+			fmt.Println(err)
 		}
 	}
 
@@ -107,16 +110,27 @@ func main() {
 	defer db.Close()
 	webDir := "./web"
 
+	envPort := os.Getenv("TODO_PORT")
+	if envPort == "" {
+		envPort = "7540"
+	}
+
+	fmt.Println("Got app port:", envPort)
+
 	taskService := services.NewTaskService(db)
 	taskController := controllers.NewTaskController(taskService)
+	jwtc := controllers.JwtController{}
+	authController := controllers.NewAuthController(&jwtc)
 
 	fmt.Println("Запускаем сервер")
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
 	http.HandleFunc("/api/nextdate", handleNextDate)
-	http.HandleFunc("/api/task", taskController.HandleTask)
-	http.HandleFunc("/api/tasks", taskController.HandleAllTasks)
-	http.HandleFunc("/api/task/done", taskController.HandleDoneTask)
-	err = http.ListenAndServe(":7540", nil)
+	http.HandleFunc("/api/task", authController.Auth(taskController.HandleTask))
+	http.HandleFunc("/api/tasks", authController.Auth(taskController.HandleAllTasks))
+	http.HandleFunc("/api/task/done", authController.Auth(taskController.HandleDoneTask))
+
+	http.HandleFunc("/api/signin", authController.HandleAuth)
+	err = http.ListenAndServe(":"+envPort, nil)
 	if err != nil {
 		panic(err)
 	}
