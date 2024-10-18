@@ -12,7 +12,8 @@ import (
 	"github.com/atinyakov/go_final_project/controllers"
 	"github.com/atinyakov/go_final_project/nextdate"
 	"github.com/atinyakov/go_final_project/services"
-	_ "modernc.org/sqlite" // Modernc SQLite driver without CGO
+	"github.com/joho/godotenv"
+	_ "modernc.org/sqlite"
 )
 
 func createDb(db *sql.DB) error {
@@ -36,7 +37,7 @@ func createDb(db *sql.DB) error {
 }
 
 func initDb() (*sql.DB, error) {
-	fmt.Println("Проверяем наличие файла БД")
+	fmt.Println("Checking if DB file exists")
 	appPath, err := os.Executable()
 	if err != nil {
 		log.Fatal(err)
@@ -52,11 +53,11 @@ func initDb() (*sql.DB, error) {
 
 	var install bool
 	if err != nil {
-		fmt.Println("Файл БД не найден")
+		fmt.Println("DB file not found")
 
 		install = true
 	}
-	fmt.Println("Запускаем БД")
+	fmt.Println("Starting DB", dbFileEnv)
 
 	db, err := sql.Open("sqlite", dbFileEnv)
 	if err != nil {
@@ -90,9 +91,8 @@ func handleNextDate(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	// так как все успешно, то статус OK
+
 	w.WriteHeader(http.StatusOK)
-	// записываем сериализованные в JSON данные в тело ответа
 	_, err = w.Write([]byte(date))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -101,6 +101,10 @@ func handleNextDate(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
 
 	db, err := initDb()
 	if err != nil {
@@ -115,14 +119,14 @@ func main() {
 		envPort = "7540"
 	}
 
-	fmt.Println("Got app port:", envPort)
+	fmt.Println("Got a port:", envPort)
 
 	taskService := services.NewTaskService(db)
 	taskController := controllers.NewTaskController(taskService)
 	jwtc := controllers.JwtController{}
 	authController := controllers.NewAuthController(&jwtc)
 
-	fmt.Println("Запускаем сервер")
+	fmt.Println("Starting a server")
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
 	http.HandleFunc("/api/nextdate", handleNextDate)
 	http.HandleFunc("/api/task", authController.Auth(taskController.HandleTask))
@@ -130,9 +134,12 @@ func main() {
 	http.HandleFunc("/api/task/done", authController.Auth(taskController.HandleDoneTask))
 
 	http.HandleFunc("/api/signin", authController.HandleAuth)
-	err = http.ListenAndServe(":"+envPort, nil)
+
+	err = http.ListenAndServe("0.0.0.0:"+envPort, nil)
+	fmt.Println("Server started on port=", envPort)
+
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Завершаем работу")
+	fmt.Println("Stopping App")
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -26,6 +27,8 @@ func (a *AuthController) HandleAuth(w http.ResponseWriter, req *http.Request) {
 	if pass == "" {
 		pass = "321"
 	}
+
+	fmt.Println("got pass", pass)
 
 	var authRequest models.Auth
 	var buf bytes.Buffer
@@ -88,6 +91,8 @@ func (a *AuthController) Auth(next http.HandlerFunc) http.HandlerFunc {
 		if pass == "" {
 			pass = "321"
 		}
+
+		fmt.Println("got pass", pass)
 
 		if len(pass) > 0 {
 			var jwt string

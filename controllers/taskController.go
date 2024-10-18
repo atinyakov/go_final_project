@@ -135,7 +135,7 @@ func (t *TaskController) HandleTask(w http.ResponseWriter, req *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusAccepted)
 		_, err = w.Write(resp)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -164,7 +164,7 @@ func (t *TaskController) HandleTask(w http.ResponseWriter, req *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		_, err = w.Write(resp)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -200,7 +200,7 @@ func (t *TaskController) HandleAllTasks(w http.ResponseWriter, req *http.Request
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		_, err = w.Write(resp)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
