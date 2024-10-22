@@ -86,9 +86,14 @@ func ValidateTask(t *Task) error {
 	if t.Date == "" {
 		t.Date = now
 	}
+
 	t1, err := time.Parse("20060102", t.Date) // check form
 	if err != nil {
 		return errors.New("invalid date")
+	}
+
+	if t.Date == now {
+		return nil
 	}
 
 	if t1.Before(time.Now()) { // check it is in the future or today

@@ -169,17 +169,19 @@ func (ts *TaskService) UpdateTask(task *models.Task) *models.TaskResponceError {
 }
 
 func (ts *TaskService) GetAllTasks(search string) ([]*models.Task, *models.TaskResponceError) {
-
+	fmt.Println("search querry", search)
 	var rows *sql.Rows
 	var sqlError error
 	if search != "" {
 		t1, err := time.Parse("02.01.2006", search) // check if date
 		if err != nil {
-			rows, sqlError = ts.db.Query("SELECT * FROM scheduler WHERE title LIKE :search OR comment LIKE :search ORDER BY date LIMIT :limit",
+			fmt.Println("got search string", t1, err)
+			rows, sqlError = ts.db.Query("SELECT * FROM scheduler WHERE title LIKE :search OR comment LIKE :search ORDER BY date ASC LIMIT :limit",
 				sql.Named("search", "%"+search+"%"),
 				sql.Named("limit", 50))
 
 		} else {
+			fmt.Println("got search date", search)
 			search = t1.Format("20060102")
 			rows, sqlError = ts.db.Query("SELECT * FROM scheduler WHERE date = :date LIMIT :limit ",
 				sql.Named("date", search),
@@ -187,7 +189,7 @@ func (ts *TaskService) GetAllTasks(search string) ([]*models.Task, *models.TaskR
 
 		}
 	} else {
-		rows, sqlError = ts.db.Query("SELECT * from scheduler ORDER BY date DESC LIMIT 50")
+		rows, sqlError = ts.db.Query("SELECT * from scheduler ORDER BY date ASC LIMIT 50")
 	}
 
 	if sqlError != nil {
